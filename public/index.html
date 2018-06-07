@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <title>Alchemy MagicalPotions creation</title>
+
+    <style>
+      .minerals {}
+      .magicPotions {}
+      .magicmixes {}
+      .minerals ul { list-style: none; }
+      .minerals ul li { display: inline-table; }
+      .minerals ul li div {
+        width:200px;
+        height:200px;
+        background-color:grey;
+        border: 20px solid white;
+        cursor: pointer;
+        text-align:center;
+        vertical-align:middle;
+      }
+      .minerals ul li div:hover { border: 20px solid red; }
+      .minerals ul li div.hover { border: 20px solid red; }
+    </style>
+  </head>
+  <body>
+
+    <div class="row">
+      <div class="col-lg-8">
+        <div class="minerals">
+          <ul>
+          </ul>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <button type="button" id="createMagicPotion" class="btn btn-primary active">Create MagicPotionMix</button>
+        <div class="magicPotions">
+          <h4>User Magic Inventory</h4>
+          <ul>
+          </ul>
+        </div>
+
+        <div class="magicmixes">
+          <h4>All Magic Receipes Available and mineral cost</h4>
+          <ul>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+
+  </body>
+  <script>
+    var selected = [];
+
+    function updateMinerals() {
+      $.get( "getMinerals", function( data ) {
+        console.log(data);
+        $(".minerals ul li").remove();
+        let ulelement = $(".minerals ul");
+        $.each( data, function( key, value ) {
+          let lidiv = '<li><div id="'+key+'" selected=false >'+ value +' '+ key +' available'+'</div></li>';
+          ulelement.append(lidiv);
+        });
+        $("ul li div").click(function(e) {
+          console.log(e.target.id);
+          var sel = e.target.getAttribute("selected");
+          if(sel=="false" ) {
+            if(selected.length >= 3)
+              return;
+            selected.push(e.target.id);
+            e.target.setAttribute("selected", true);
+            e.target.style.borderColor = "red";
+          }
+          else {
+            selected.splice( $.inArray(sel, selected), 1 );
+            e.target.setAttribute("selected",false);
+            e.target.style.borderColor = "";
+          }
+          console.log(selected);
+        });
+      });
+    }
+
+    function createMagicPotions(data) {
+      $(".magicPotions ul li").remove();
+      let ulelement = $(".magicPotions ul");
+      $.each( data, function( key, value ) {
+        let lidiv = '<li><div id="'+key+'" selected=false >'+ value +' '+ key +' available'+'</div></li>';
+        ulelement.append(lidiv);
+      });
+    }
+
+    function showMagixMixesAvailable() {
+      $.get( "getMagicPotionsMinerals", function( data ) {
+        console.log(data);
+        $(".magicmixes ul li").remove();
+        let ulelement = $(".magicmixes ul");
+        $.each( data, function( key, value ) {
+          let lidiv = '<li><div >'+ key + '::'+JSON.stringify(value) + '</div></li>';
+          ulelement.append(lidiv);
+        });
+      });
+    }
+    updateMinerals();
+    showMagixMixesAvailable();
+
+    $.get("getExistingMagicPotions", function( data ) {
+      createMagicPotions(data);
+    });
+
+    $("#createMagicPotion").click(function(event){
+      if(selected.length == 3) {
+        $.ajax({
+          type : "POST",
+          url : "createMagicPotion",
+          data : JSON.stringify({mineral:selected}),
+          contentType : 'application/json',
+          success : function(response) {
+            console.log(response);
+            if(response.status !== "success") {
+              alert("failed to create the magical potion");
+            }
+            else {
+              createMagicPotions(response.userMagicMixesAvailable)
+              alert('successfully created magic potion: ' + response.magicPotion);
+              selected = [];
+              updateMinerals();
+            }
+          }
+        });
+      }
+      else {
+        alert('you should select exactly 3 minerals');
+      }
+    });
+
+  </script>
+</html>
