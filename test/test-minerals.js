@@ -34,8 +34,9 @@ describe('Testing Magic Mixes' , () => {
   let listOfMagicMixes = config.AvailableMagicMixes;
   for(let magicPotion of Object.keys(listOfMagicMixes)) {
     let receipes = Object.keys(config.AvailableMagicMixes[magicPotion]);
+    let jar = request.jar()
     it(`check ${magicPotion} MagiPotions validity`, done => {
-        request.post({
+        request.defaults({jar: jar}).post({
           uri: `${uri}/createMagicPotion`,
           json: true,
           body: {
@@ -43,13 +44,24 @@ describe('Testing Magic Mixes' , () => {
           }
         }, (err, response, body) => {
           if(err) done(err);
-          console.log(body);
           expect(body.status).to.equal("success");
           expect(body.magicPotion).to.equal(magicPotion);
           expect(body.userMagicMixesAvailable[magicPotion]).to.equal(1);
           expect(response.statusCode).to.equal(200);
           done();
         });
+    });
+
+    it("Test list of User Magic Mixes", done => {
+      request.defaults({jar: jar}).get(`${uri}/getExistingMagicPotions`, {}, (err, response, body) => {
+        if(err) done(err);
+        var potions = JSON.parse(body);
+        let obj ={};
+        obj[magicPotion] = 1;
+        expect(potions).to.deep.equal(obj);
+        expect(response.statusCode).to.equal(200);
+        done();
+      });
     });
   }
 
