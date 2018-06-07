@@ -1,0 +1,21 @@
+{
+  "name": "doctrine",
+  "version": "1.0.0",
+  "description": "Test",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "npm start",
+    "nodemon": "nodemon --exec npm run dev",
+    "test": "./node_modules/.bin/mocha --exit --reporter spec --timeout 15000"
+  },
+  "author": "Rama Rao GANJI",
+  "license": "MIT",
+  "dependencies": {
+    "chai": "^4.1.2",
+    "cookie-parser": "^1.4.3",
+    "express": "^4.16.3",
+    "mocha": "^5.2.0",
+    "request": "^2.87.0"
+  }
+}
